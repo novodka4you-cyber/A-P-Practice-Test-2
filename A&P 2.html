@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>A&P Hard Practice Exam (100) – Quiz (Explanations at End)</title>
+  <style>
+    :root { --bg:#0b0f14; --card:#121a24; --muted:#9fb2c8; --text:#e7eef7; --accent:#4da3ff; --ok:#22c55e; --bad:#ef4444; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:linear-gradient(180deg,#08101a, #0b0f14); color:var(--text); }
+    header { padding:16px 18px; position:sticky; top:0; background:rgba(11,15,20,.85); backdrop-filter: blur(10px);
+      border-bottom:1px solid rgba(255,255,255,.06); }
+    header h1 { margin:0; font-size:16px; font-weight:700; letter-spacing:.2px; }
+    header .sub { margin-top:6px; color:var(--muted); font-size:12px; display:flex; gap:14px; flex-wrap:wrap; }
+    .wrap { max-width:980px; margin:0 auto; padding:16px; }
+    .card { background:var(--card); border:1px solid rgba(255,255,255,.07); border-radius:14px; padding:14px; margin:12px 0;
+      box-shadow: 0 10px 30px rgba(0,0,0,.25); }
+    .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .btn { appearance:none; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.04); color:var(--text);
+      padding:9px 12px; border-radius:10px; cursor:pointer; font-weight:650; font-size:13px; }
+    .btn:hover { border-color: rgba(77,163,255,.6); }
+    .btn.primary { background: rgba(77,163,255,.14); border-color: rgba(77,163,255,.55); }
+    .btn.danger { background: rgba(239,68,68,.12); border-color: rgba(239,68,68,.55); }
+    .btn:disabled { opacity:.45; cursor:not-allowed; }
+    .progress { height:10px; border-radius:999px; background:rgba(255,255,255,.08); overflow:hidden; margin-top:10px; }
+    .progress > div { height:100%; width:0%; background: linear-gradient(90deg, rgba(77,163,255,.9), rgba(34,197,94,.9)); }
+    .qhead { display:flex; justify-content:space-between; gap:10px; }
+    .qnum { color:var(--muted); font-size:12px; }
+    .qtext { font-size:16px; font-weight:750; margin:6px 0 12px; line-height:1.25; }
+    .choices { display:grid; gap:8px; }
+    label.choice { display:flex; gap:10px; align-items:flex-start; padding:10px 10px; border-radius:12px;
+      border:1px solid rgba(255,255,255,.10); background: rgba(255,255,255,.03); cursor:pointer; }
+    label.choice:hover { border-color: rgba(77,163,255,.5); }
+    input[type="radio"] { margin-top:3px; }
+    .pill { font-size:12px; color:var(--muted); border:1px solid rgba(255,255,255,.10); padding:4px 8px; border-radius:999px; }
+    .resultLine { font-size:14px; margin:8px 0 0; color:var(--muted); }
+    .ok { color:var(--ok); font-weight:750; }
+    .bad { color:var(--bad); font-weight:750; }
+    .reviewItem { border-top:1px solid rgba(255,255,255,.08); padding-top:10px; margin-top:10px; }
+    .small { font-size:12px; color:var(--muted); }
+    .whyBox { margin-top:6px; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03); color: var(--muted); font-size: 13px; line-height: 1.35; }
+    .whyBox b { color: var(--text); }
+    .footerSpace { height:30px; }
+    .hidden { display:none !important; }
+  </style>
+</head>
+<body>
+<header>
+  <h1>A&P Hard Practice Exam (100) – Quiz (Explanations at End)</h1>
+  <div class="sub">
+    <span id="metaPill" class="pill">Not started</span>
+    <span class="pill">Single-file • Offline</span>
+    <span class="pill">Explanations only after Finish</span>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="card" id="introCard">
+    <div class="row" style="justify-content:space-between;">
+      <div>
+        <div style="font-weight:800; font-size:16px;">Ready?</div>
+        <div class="small">Answer each question, then hit <b>Next</b>. You’ll get your score + explanations at the end.</div>
+      </div>
+      <div class="row">
+        <button class="btn primary" id="startBtn">Start</button>
+        <button class="btn" id="shuffleBtn" title="Randomize question order">Shuffle Questions</button>
+      </div>
+    </div>
+    <div class="progress"><div id="progBar"></div></div>
+  </div>
+
+  <div class="card hidden" id="quizCard">
+    <div class="qhead">
+      <div class="qnum" id="qnum"></div>
+      <div class="pill" id="timerPill">Timer: off</div>
+    </div>
+    <div class="qtext" id="qtext"></div>
+    <div class="choices" id="choices"></div>
+
+    <div class="row" style="justify-content:space-between; margin-top:12px;">
+      <button class="btn" id="prevBtn">Prev</button>
+      <div class="row">
+        <button class="btn" id="flagBtn">Flag</button>
+        <button class="btn primary" id="nextBtn">Next</button>
+      </div>
+    </div>
+    <div class="resultLine" id="inlineMsg"></div>
+  </div>
+
+  <div class="card hidden" id="finishCard">
+    <div class="row" style="justify-content:space-between;">
+      <div>
+        <div style="font-weight:900; font-size:18px;">Done.</div>
+        <div class="resultLine" id="scoreLine"></div>
+      </div>
+      <div class="row">
+        <button class="btn" id="reviewToggleBtn">Show Missed + Explanations</button>
+        <button class="btn" id="allToggleBtn">Show All Explanations</button>
+        <button class="btn danger" id="resetBtn">Restart</button>
+      </div>
+    </div>
+    <div class="progress"><div id="progBar2"></div></div>
+    <div id="reviewArea" class="hidden" style="margin-top:12px;"></div>
+    <div id="allArea" class="hidden" style="margin-top:12px;"></div>
+  </div>
+
+  <div class="footerSpace"></div>
+</div>
+
+<script>
+  // correct: 0=A,1=B,2=C,3=D
+  // e: short explanation shown ONLY after finishing
+  const questions = [
+    {q:"A cell placed in a hypertonic solution will:", c:["Swell and lyse","Remain unchanged","Shrink due to water loss","Increase ATP production"], a:2, e:"Hypertonic = higher solute outside → water leaves the cell → it shrinks."},
+    {q:"Active transport differs from diffusion because it:", c:["Requires a concentration gradient","Requires membrane pores","Requires ATP","Moves water only"], a:2, e:"Active transport uses ATP to move against a gradient; diffusion is passive."},
+    {q:"Failure of the Na⁺/K⁺ pump most directly affects:", c:["DNA replication","Resting membrane potential","Protein synthesis","Osmosis"], a:1, e:"The Na⁺/K⁺ pump maintains ionic gradients that create the resting potential."},
+    {q:"ATP hydrolysis directly provides energy for:", c:["Passive diffusion","Facilitated diffusion","Active transport","Osmosis"], a:2, e:"ATP directly powers pumps/transporters moving substances against gradients."},
+    {q:"Glycolysis occurs in the:", c:["Mitochondria","Nucleus","Cytoplasm","Ribosome"], a:2, e:"Glycolysis happens in the cytoplasm (before mitochondria are involved)."},
+    {q:"Glucagon release is stimulated by:", c:["Hyperglycemia","Hypoglycemia","Insulin","ATP depletion"], a:1, e:"Low blood glucose triggers glucagon to raise glucose."},
+    {q:"RNA differs from DNA because RNA:", c:["Contains thymine","Is double stranded","Is found only in nucleus","Contains uracil"], a:3, e:"RNA uses uracil (U) instead of thymine (T)."},
+    {q:"The cell membrane is best described as:", c:["Rigid lipid barrier","Phospholipid bilayer with proteins","Protein-only structure","Carbohydrate matrix"], a:1, e:"Fluid mosaic: phospholipid bilayer + embedded proteins."},
+    {q:"Osmosis will stop when:", c:["ATP is depleted","Electrolytes equilibrate","Hydrostatic pressure exceeds osmotic pressure","Water concentration equalizes"], a:3, e:"Net water movement stops when water concentration equalizes."},
+    {q:"Mitochondrial dysfunction most directly reduces:", c:["DNA replication","ATP availability","Protein folding","Ion diffusion"], a:1, e:"Mitochondria make most ATP via oxidative phosphorylation."},
+    {q:"A cell with high metabolic demand will have more:", c:["Ribosomes","Lysosomes","Golgi bodies","Mitochondria"], a:3, e:"Higher energy demand → more mitochondria."},
+    {q:"Secondary active transport relies on:", c:["ATP directly","Sodium gradient","Potassium channels","Osmosis"], a:1, e:"Uses the Na⁺ gradient (created by ATP pumps) to drive other transport."},
+    {q:"Facilitated diffusion differs from simple diffusion because it:", c:["Uses ATP","Moves against gradient","Requires carrier proteins","Moves water only"], a:2, e:"Passive movement that requires channels/carriers."},
+    {q:"Intracellular fluid contains the highest concentration of:", c:["Sodium","Chloride","Potassium","Calcium"], a:2, e:"Inside cells: K⁺ high; outside cells: Na⁺ high."},
+    {q:"Failure of cellular respiration leads first to:", c:["Apoptosis","Necrosis","Loss of membrane potential","DNA mutation"], a:2, e:"ATP loss → pumps fail → membrane potential collapses early."},
+
+    {q:"A lesion of the frontal lobe would MOST likely affect:", c:["Vision","Hearing","Personality","Balance"], a:2, e:"Frontal lobe = executive function/behavior and motor planning."},
+    {q:"Parasympathetic stimulation leads to:", c:["Increased cardiac output","Bronchodilation","Increased GI motility","Vasoconstriction"], a:2, e:"Parasympathetic = rest/digest → ↑ GI motility."},
+    {q:"The action potential upstroke is caused by:", c:["Potassium efflux","Sodium influx","Calcium influx","Chloride influx"], a:1, e:"Rapid depolarization comes from Na⁺ channel opening."},
+    {q:"Myelin increases conduction velocity by:", c:["Increasing synapse number","Reducing ion leakage","Increasing axon diameter","Slowing depolarization"], a:1, e:"Myelin insulates axon → saltatory conduction."},
+    {q:"Skeletal muscle contraction requires:", c:["Acetylcholine release","Calcium release","ATP availability","All of the above"], a:3, e:"ACh initiates, Ca²⁺ enables cross-bridge, ATP powers cycling."},
+    {q:"Smooth muscle differs from skeletal muscle because it:", c:["Uses troponin","Is voluntary","Contracts slower","Is striated"], a:2, e:"Smooth contracts slower and uses calmodulin (not troponin)."},
+    {q:"Damage to the medulla oblongata is MOST immediately fatal due to loss of:", c:["Memory","Balance","Respiratory drive","Sensation"], a:2, e:"Medulla controls vital autonomic functions like breathing."},
+    {q:"Afferent neurons carry signals:", c:["From CNS to muscle","From receptors to CNS","Between CNS neurons","From glands to CNS"], a:1, e:"Afferent = toward CNS (sensory)."},
+    {q:"The somatic nervous system innervates:", c:["Cardiac muscle","Smooth muscle","Skeletal muscle","Glands"], a:2, e:"Somatic controls voluntary skeletal muscle."},
+    {q:"Acetylcholine at the neuromuscular junction causes:", c:["Hyperpolarization","Inhibition","Depolarization","Muscle relaxation"], a:2, e:"ACh opens channels → end-plate depolarization → contraction."},
+    {q:"Cardiac muscle differs from skeletal muscle because cardiac muscle:", c:["Is voluntary","Lacks striations","Has intercalated discs","Uses no calcium"], a:2, e:"Intercalated discs synchronize contraction via gap junctions."},
+    {q:"Which cranial nerve controls eye abduction?", c:["II","III","IV","VI"], a:3, e:"CN VI (abducens) controls lateral rectus → abduction."},
+    {q:"The refractory period of neurons prevents:", c:["Depolarization","Repolarization","Continuous firing","Synaptic transmission"], a:2, e:"Prevents immediate re-firing; ensures one-way propagation."},
+    {q:"Upper motor neuron injury causes:", c:["Flaccid paralysis","Muscle atrophy","Hyperreflexia","Fasciculations"], a:2, e:"UMN lesions remove inhibition → hyperreflexia/spasticity."},
+    {q:"Lower motor neuron injury causes:", c:["Spastic paralysis","Hypertonia","Hyperreflexia","Flaccid paralysis"], a:3, e:"LMN lesions disconnect muscle → flaccid weakness/atrophy."},
+    {q:"Calcium’s role in muscle contraction is to:", c:["Bind actin","Bind myosin","Expose binding sites","Break ATP"], a:2, e:"Ca²⁺ moves tropomyosin to expose actin binding sites."},
+    {q:"The parasympathetic system originates primarily from the:", c:["Thoracic spine","Lumbar spine","Craniosacral regions","Cervical spine"], a:2, e:"Parasympathetic outflow is craniosacral."},
+    {q:"The motor cortex is located in the:", c:["Temporal lobe","Parietal lobe","Occipital lobe","Frontal lobe"], a:3, e:"Primary motor cortex sits in frontal lobe (precentral gyrus)."},
+    {q:"Damage to the cerebellum results in:", c:["Paralysis","Aphasia","Ataxia","Blindness"], a:2, e:"Cerebellum coordinates movement → ataxia when damaged."},
+    {q:"Neurotransmitters are released via:", c:["Diffusion","Active transport","Exocytosis","Osmosis"], a:2, e:"Vesicles fuse with membrane → exocytosis."},
+
+    {q:"Cardiac output is most sensitive to changes in:", c:["Heart rate","Stroke volume","Afterload","Contractility"], a:1, e:"CO = HR × SV; SV varies widely with preload/afterload/contractility."},
+    {q:"Increased preload leads to increased stroke volume due to:", c:["Electrical conduction","Frank-Starling mechanism","Baroreceptors","Chemoreceptors"], a:1, e:"More filling stretches myocardium → stronger contraction (Starling)."},
+    {q:"The AV node delay allows:", c:["Faster ventricular contraction","Ventricular filling","Increased heart rate","Valve closure"], a:1, e:"AV delay gives time for ventricular filling."},
+    {q:"Coronary artery perfusion occurs primarily during:", c:["Systole","Diastole","Isovolumetric contraction","Atrial systole"], a:1, e:"Coronaries are compressed in systole; they fill in diastole."},
+    {q:"Increased afterload will initially:", c:["Increase stroke volume","Decrease stroke volume","Increase preload","Increase heart rate"], a:1, e:"Higher resistance → less ejection → SV drops initially."},
+    {q:"S1 heart sound corresponds to closure of the:", c:["Semilunar valves","Aortic valve","AV valves","Pulmonic valve"], a:2, e:"S1 = mitral/tricuspid closure."},
+    {q:"MAP is a better indicator of perfusion than systolic pressure because it reflects:", c:["Peak pressure","Average pressure","Pulse pressure","Cardiac output only"], a:1, e:"MAP approximates average pressure driving organ perfusion."},
+    {q:"Hypovolemic shock initially causes:", c:["Increased preload","Decreased preload","Increased stroke volume","Increased MAP"], a:1, e:"Volume loss → ↓ venous return → ↓ preload."},
+    {q:"Distributive shock is characterized by:", c:["Decreased vascular tone","Decreased cardiac contractility","Obstruction of flow","Volume loss"], a:0, e:"Low SVR from vasodilation causes maldistributed flow."},
+    {q:"Baroreceptor firing increases when:", c:["BP decreases","BP increases","CO₂ increases","O₂ decreases"], a:1, e:"More arterial stretch → more firing."},
+    {q:"Central chemoreceptors respond primarily to:", c:["Blood O₂","Blood pH","CSF pH","Peripheral CO₂"], a:2, e:"They sense CSF pH changes driven mainly by CO₂."},
+    {q:"Hypoventilation leads to:", c:["Respiratory alkalosis","Respiratory acidosis","Metabolic acidosis","Metabolic alkalosis"], a:1, e:"CO₂ retention → respiratory acidosis."},
+    {q:"Surfactant deficiency causes:", c:["Increased compliance","Alveolar collapse","Bronchodilation","Hyperventilation"], a:1, e:"Higher surface tension collapses alveoli (atelectasis)."},
+    {q:"Dead space ventilation results in:", c:["Efficient gas exchange","Increased PaO₂","Wasted ventilation","Decreased PaCO₂"], a:2, e:"Ventilation without perfusion can’t exchange gas."},
+    {q:"Oxygen diffuses across the alveolar membrane due to:", c:["Active transport","Partial pressure gradient","Osmosis","ATP"], a:1, e:"Diffusion occurs down partial pressure gradients."},
+    {q:"Minute ventilation equals:", c:["RR × dead space","TV × RR","TV − dead space","RR ÷ TV"], a:1, e:"Minute ventilation = TV × RR."},
+    {q:"Increased PaCO₂ stimulates breathing via:", c:["Baroreceptors","Peripheral chemoreceptors","Central chemoreceptors","Stretch receptors"], a:2, e:"CO₂ → CSF pH drop → central chemoreceptors increase ventilation."},
+    {q:"Tidal volume normally increases during:", c:["Sleep","Exercise","Shock","Apnea"], a:1, e:"Exercise increases depth of breathing."},
+    {q:"Obstructive shock reduces cardiac output by:", c:["Decreasing contractility","Reducing venous return","Decreasing heart rate","Increasing preload"], a:1, e:"Obstruction limits venous return/filling."},
+    {q:"Pulmonary circulation differs from systemic circulation because it has:", c:["Higher pressure","Lower resistance","Thicker vessels","Higher oxygen content"], a:1, e:"Pulmonary circuit is low resistance/low pressure."},
+    {q:"Hemoglobin releases oxygen most readily when:", c:["pH increases","CO₂ decreases","Temperature decreases","pH decreases"], a:3, e:"Low pH shifts curve right → easier O₂ unloading (Bohr effect)."},
+    {q:"The primary driver of venous return is:", c:["Arterial pressure","Skeletal muscle pump","Heart rate","Stroke volume"], a:1, e:"Muscle pump + valves pushes venous blood back."},
+    {q:"Alveolar ventilation excludes:", c:["Tidal volume","Respiratory rate","Dead space","Oxygen diffusion"], a:2, e:"Alveolar ventilation subtracts dead space from TV."},
+    {q:"Pulmonary edema impairs gas exchange by increasing:", c:["Surface area","Diffusion distance","Oxygen gradient","Ventilation"], a:1, e:"Fluid increases diffusion distance."},
+    {q:"Right ventricular failure most directly causes:", c:["Pulmonary edema","Systemic edema","Hypertension","Hypoxia"], a:1, e:"RV backs up into systemic venous system → edema."},
+    {q:"Cardiac tamponade causes shock by:", c:["Decreasing contractility","Increasing afterload","Limiting ventricular filling","Increasing heart rate"], a:2, e:"External pressure prevents filling → ↓ preload/CO."},
+    {q:"Chemoreceptors ultimately regulate:", c:["Blood pressure","Cardiac output","Ventilation","Stroke volume"], a:2, e:"Their output changes ventilation to correct CO₂/O₂/pH."},
+    {q:"Increased hemoglobin affinity for oxygen occurs with:", c:["Increased CO₂","Increased temperature","Decreased pH","Decreased CO₂"], a:3, e:"Less CO₂ (and higher pH) shifts curve left → higher affinity."},
+    {q:"A patient with metabolic acidosis will compensate by:", c:["Hypoventilating","Hyperventilating","Retaining CO₂","Decreasing RR"], a:1, e:"Hyperventilation blows off CO₂ to raise pH."},
+    {q:"The pulmonary artery carries:", c:["Oxygenated blood to lungs","Deoxygenated blood to lungs","Oxygenated blood to body","Deoxygenated blood to body"], a:1, e:"Pulmonary artery is the exception: deoxygenated blood to lungs."},
+
+    {q:"Filtration pressure in the kidney depends MOST on:", c:["Plasma proteins","Glomerular hydrostatic pressure","Bowman’s capsule pressure","RAAS"], a:1, e:"Main force pushing filtrate out is glomerular hydrostatic pressure."},
+    {q:"The PCT reabsorbs MOST of:", c:["Sodium","Water","Glucose","All of the above"], a:3, e:"Bulk reabsorption happens in PCT."},
+    {q:"Aldosterone causes the kidney to:", c:["Excrete sodium","Retain sodium","Retain potassium","Excrete water only"], a:1, e:"Aldosterone ↑ Na⁺ reabsorption and ↑ K⁺ excretion distally."},
+    {q:"ADH primarily affects the:", c:["PCT","Loop of Henle","DCT/collecting duct","Glomerulus"], a:2, e:"ADH inserts aquaporins in collecting duct → water reabsorption."},
+    {q:"The loop of Henle establishes:", c:["Filtration","Countercurrent gradient","Secretion","Acid-base balance"], a:1, e:"Countercurrent multiplier creates medullary concentration gradient."},
+    {q:"Diarrhea most commonly causes:", c:["Metabolic alkalosis","Respiratory alkalosis","Metabolic acidosis","Respiratory acidosis"], a:2, e:"Bicarbonate loss → metabolic acidosis."},
+    {q:"Vomiting most commonly causes:", c:["Metabolic acidosis","Metabolic alkalosis","Respiratory acidosis","Respiratory alkalosis"], a:1, e:"Loss of gastric acid → metabolic alkalosis."},
+    {q:"Bile is produced by the:", c:["Gallbladder","Pancreas","Liver","Duodenum"], a:2, e:"Liver produces bile; gallbladder stores it."},
+    {q:"The gallbladder functions to:", c:["Produce bile","Store bile","Emulsify fats","Absorb nutrients"], a:1, e:"Gallbladder stores/concentrates bile."},
+    {q:"The ligament of Treitz marks the:", c:["End of jejunum","End of duodenum","Start of ileum","Start of colon"], a:1, e:"It marks the duodenojejunal junction."},
+    {q:"Insulin secretion increases when:", c:["Blood glucose rises","Blood glucose falls","Glucagon increases","Cortisol increases"], a:0, e:"High glucose → beta cells release insulin."},
+    {q:"Cortisol primarily:", c:["Lowers blood glucose","Increases inflammation","Increases blood glucose","Causes hypoglycemia"], a:2, e:"Cortisol raises glucose via gluconeogenesis and is anti-inflammatory."},
+    {q:"Epinephrine increases blood glucose by:", c:["Glycogen synthesis","Glycogen breakdown","Insulin release","Fat storage"], a:1, e:"Epi triggers glycogenolysis for fight/flight."},
+    {q:"Antibodies are produced by:", c:["T cells","Macrophages","Plasma cells","Neutrophils"], a:2, e:"Plasma cells (B-cell derivatives) secrete antibodies."},
+    {q:"IgA is most important for:", c:["Allergies","First exposure response","Mucosal immunity","Placental transfer"], a:2, e:"IgA protects mucosal surfaces."},
+    {q:"IgM is important for:", c:["Long-term immunity","Secondary response","Initial immune response","Allergic reactions"], a:2, e:"IgM is first antibody produced in primary response."},
+    {q:"T-helper cells function to:", c:["Kill infected cells","Produce antibodies","Activate other immune cells","Phagocytose bacteria"], a:2, e:"Helper T cells coordinate immune activation."},
+    {q:"Lymph returns to circulation via the:", c:["Renal vein","Superior vena cava","Thoracic duct","Portal vein"], a:2, e:"Thoracic duct drains lymph to venous circulation."},
+    {q:"The spleen primarily functions in:", c:["Antibody production","RBC filtration","Lymph drainage","Hormone secretion"], a:1, e:"Spleen filters aged RBCs and supports immunity."},
+    {q:"Platelets originate from:", c:["Erythrocytes","Megakaryocytes","Leukocytes","Lymphocytes"], a:1, e:"Platelets are fragments of megakaryocytes."},
+    {q:"Tendons transmit force from:", c:["Bone to bone","Muscle to bone","Muscle to muscle","Bone to cartilage"], a:1, e:"Tendons attach muscle to bone."},
+    {q:"Ligaments stabilize joints by connecting:", c:["Muscle to bone","Bone to bone","Tendon to bone","Cartilage to muscle"], a:1, e:"Ligaments connect bone to bone across joints."},
+    {q:"Axial skeleton function is primarily:", c:["Movement","Protection","Locomotion","Manipulation"], a:1, e:"Axial skeleton protects skull/spine/thorax structures."},
+    {q:"Appendicular skeleton primarily allows:", c:["Protection","Hematopoiesis","Movement","Respiration"], a:2, e:"Appendicular skeleton enables movement/locomotion."},
+    {q:"GAS alarm stage involves:", c:["Cortisol depletion","Parasympathetic dominance","Sympathetic activation","Immune suppression"], a:2, e:"Alarm = immediate sympathetic response."},
+    {q:"GAS resistance stage is marked by:", c:["Adaptation","Collapse","Shock","Exhaustion"], a:0, e:"Resistance = sustained adaptation to the stressor."},
+    {q:"GAS exhaustion stage results from:", c:["Short stress exposure","Failure of adaptation","Increased immunity","Homeostasis"], a:1, e:"Exhaustion occurs when reserves are depleted."},
+    {q:"Endocrine glands release substances via:", c:["Ducts","Diffusion only","Bloodstream","Exocytosis to ducts"], a:2, e:"Endocrine secretion enters bloodstream."},
+    {q:"Exocrine secretion differs because it uses:", c:["Blood","Capillaries","Ducts","Receptors"], a:2, e:"Exocrine glands use ducts."},
+    {q:"Ovaries produce:", c:["Testosterone","Estrogen","Progesterone only","Cortisol"], a:1, e:"Primary ovarian hormone classically tested: estrogen."},
+    {q:"Testes primarily produce:", c:["Estrogen","Progesterone","Testosterone","Aldosterone"], a:2, e:"Testes primarily make testosterone."},
+    {q:"Chemoreceptor stimulation ultimately alters:", c:["Stroke volume","Blood pressure","Ventilation","Contractility"], a:2, e:"Chemoreceptors drive ventilation changes."},
+    {q:"Increased potassium levels MOST affect:", c:["Skeletal muscle","Cardiac conduction","GI motility","Renal filtration"], a:1, e:"K⁺ strongly affects cardiac membrane excitability/conduction."},
+    {q:"RBC lifespan is approximately:", c:["30 days","60 days","90 days","120 days"], a:3, e:"RBCs circulate ~120 days."},
+    {q:"Hemoglobin is synthesized in:", c:["Plasma","Bone marrow","Liver","Spleen"], a:1, e:"Hemoglobin is made during RBC production in bone marrow."}
+  ];
+
+  let order = questions.map((_,i)=>i);
+  let idx = 0;
+  const state = {
+    answers: Array(questions.length).fill(null),
+    flags: Array(questions.length).fill(false),
+    started: false,
+    shuffled: false
+  };
+
+  const introCard = document.getElementById("introCard");
+  const quizCard = document.getElementById("quizCard");
+  const finishCard = document.getElementById("finishCard");
+  const startBtn = document.getElementById("startBtn");
+  const shuffleBtn = document.getElementById("shuffleBtn");
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  const flagBtn = document.getElementById("flagBtn");
+  const qnum = document.getElementById("qnum");
+  const qtext = document.getElementById("qtext");
+  const choices = document.getElementById("choices");
+  const inlineMsg = document.getElementById("inlineMsg");
+  const metaPill = document.getElementById("metaPill");
+  const progBar = document.getElementById("progBar");
+  const progBar2 = document.getElementById("progBar2");
+  const scoreLine = document.getElementById("scoreLine");
+  const reviewArea = document.getElementById("reviewArea");
+  const allArea = document.getElementById("allArea");
+  const reviewToggleBtn = document.getElementById("reviewToggleBtn");
+  const allToggleBtn = document.getElementById("allToggleBtn");
+  const resetBtn = document.getElementById("resetBtn");
+
+  function shuffleArray(arr){
+    for(let i=arr.length-1;i>0;i--){
+      const j = Math.floor(Math.random()*(i+1));
+      [arr[i],arr[j]] = [arr[j],arr[i]];
+    }
+  }
+
+  function updateProgress(){
+    const pct = ((idx)/questions.length)*100;
+    progBar.style.width = pct + "%";
+    const answered = state.answers.filter(v=>v!==null).length;
+    metaPill.textContent = state.started ? `Q ${idx+1}/100 • Answered ${answered}/100` : "Not started";
+  }
+
+  function escapeHtml(s){
+    return s.replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+  }
+
+  function render(){
+    updateProgress();
+    inlineMsg.textContent = "";
+    const qIndex = order[idx];
+    const Q = questions[qIndex];
+
+    qnum.textContent = `Question ${idx+1} of ${questions.length}` + (state.flags[qIndex] ? " • 🚩 Flagged" : "");
+    qtext.textContent = Q.q;
+
+    choices.innerHTML = "";
+    const picked = state.answers[qIndex];
+
+    Q.c.forEach((text, i) => {
+      const id = `q${idx}_c${i}`;
+      const lab = document.createElement("label");
+      lab.className = "choice";
+      lab.setAttribute("for", id);
+
+      const radio = document.createElement("input");
+      radio.type = "radio";
+      radio.name = "choice";
+      radio.id = id;
+      radio.value = i;
+      radio.checked = (picked === i);
+
+      radio.addEventListener("change", () => {
+        state.answers[qIndex] = i;
+        inlineMsg.innerHTML = `<span class="pill">Saved</span>`;
+        metaPill.textContent = `Q ${idx+1}/100 • Answered ${state.answers.filter(v=>v!==null).length}/100`;
+      });
+
+      const span = document.createElement("div");
+      const letter = ["A","B","C","D"][i];
+      span.innerHTML = `<b style="color:var(--accent)">${letter}.</b> ${escapeHtml(text)}`;
+
+      lab.appendChild(radio);
+      lab.appendChild(span);
+      choices.appendChild(lab);
+    });
+
+    prevBtn.disabled = (idx === 0);
+    nextBtn.textContent = (idx === questions.length - 1) ? "Finish" : "Next";
+    flagBtn.textContent = state.flags[qIndex] ? "Unflag" : "Flag";
+  }
+
+  function buildReview(missedOnly){
+    const container = missedOnly ? reviewArea : allArea;
+    container.innerHTML = "";
+
+    const list = [];
+    for(let i=0;i<questions.length;i++){
+      const picked = state.answers[i];
+      const isCorrect = picked === questions[i].a;
+      if(missedOnly && isCorrect) continue;
+      list.push(i);
+    }
+
+    list.forEach((qi) => {
+      const Q = questions[qi];
+      const picked = state.answers[qi];
+      const pickedText = (picked === null) ? "No answer" : `${["A","B","C","D"][picked]}. ${Q.c[picked]}`;
+      const correctText = `${["A","B","C","D"][Q.a]}. ${Q.c[Q.a]}`;
+      const isCorrect = picked === Q.a;
+
+      const wrap = document.createElement("div");
+      wrap.className = "reviewItem";
+      wrap.innerHTML = `
+        <div style="font-weight:800;">${missedOnly ? "Missed:" : "Q:"} ${escapeHtml(Q.q)}</div>
+        <div class="small">Your answer: <span class="${isCorrect ? "ok" : "bad"}">${escapeHtml(pickedText)}</span></div>
+        <div class="small">Correct: <span class="ok">${escapeHtml(correctText)}</span></div>
+        <div class="whyBox"><b>Why:</b> ${escapeHtml(Q.e || "")}</div>
+      `;
+      container.appendChild(wrap);
+    });
+
+    if(list.length === 0){
+      container.innerHTML = `<div class="small">Nothing to show.</div>`;
+    }
+  }
+
+  function finish(){
+    let correct = 0;
+    for(let i=0;i<questions.length;i++){
+      if(state.answers[i] === questions[i].a) correct++;
+    }
+    const pct = Math.round((correct/questions.length)*100);
+    scoreLine.innerHTML = `Score: <span class="${pct>=80?'ok':'bad'}">${correct}/100 (${pct}%)</span> • Missed: ${100-correct}`;
+    progBar2.style.width = (correct/questions.length)*100 + "%";
+
+    // Build end-only explanations (hidden until toggled)
+    buildReview(true);
+    buildReview(false);
+
+    introCard.classList.add("hidden");
+    quizCard.classList.add("hidden");
+    finishCard.classList.remove("hidden");
+    metaPill.textContent = `Finished • ${correct}/100`;
+  }
+
+  // Events
+  startBtn.addEventListener("click", () => {
+    state.started = true;
+    introCard.classList.add("hidden");
+    quizCard.classList.remove("hidden");
+    render();
+  });
+
+  shuffleBtn.addEventListener("click", () => {
+    if(state.started) return;
+    shuffleArray(order);
+    state.shuffled = true;
+    metaPill.textContent = "Shuffled • Not started";
+  });
+
+  prevBtn.addEventListener("click", () => {
+    if(idx > 0){ idx--; render(); }
+  });
+
+  nextBtn.addEventListener("click", () => {
+    if(idx === questions.length - 1){
+      finish();
+      return;
+    }
+    idx++;
+    render();
+  });
+
+  flagBtn.addEventListener("click", () => {
+    const qIndex = order[idx];
+    state.flags[qIndex] = !state.flags[qIndex];
+    render();
+  });
+
+  reviewToggleBtn.addEventListener("click", () => {
+    reviewArea.classList.toggle("hidden");
+    reviewToggleBtn.textContent = reviewArea.classList.contains("hidden")
+      ? "Show Missed + Explanations"
+      : "Hide Missed + Explanations";
+  });
+
+  allToggleBtn.addEventListener("click", () => {
+    allArea.classList.toggle("hidden");
+    allToggleBtn.textContent = allArea.classList.contains("hidden")
+      ? "Show All Explanations"
+      : "Hide All Explanations";
+  });
+
+  resetBtn.addEventListener("click", () => {
+    idx = 0;
+    state.answers.fill(null);
+    state.flags.fill(false);
+    state.started = false;
+
+    // keep shuffle if user shuffled
+    if(!state.shuffled) order = questions.map((_,i)=>i);
+
+    reviewArea.classList.add("hidden");
+    allArea.classList.add("hidden");
+    reviewToggleBtn.textContent = "Show Missed + Explanations";
+    allToggleBtn.textContent = "Show All Explanations";
+
+    finishCard.classList.add("hidden");
+    introCard.classList.remove("hidden");
+    metaPill.textContent = "Not started";
+    progBar.style.width = "0%";
+  });
+
+  progBar.style.width = "0%";
+</script>
+</body>
+</html>
